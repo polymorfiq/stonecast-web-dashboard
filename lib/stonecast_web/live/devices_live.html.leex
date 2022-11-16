@@ -1,0 +1,5 @@
+<h1>Stonecast Devices</h1>
+
+<%= @devices |> Enum.map(fn device -> %>
+    <a href="#"><%= device[:name] %></a>
+<% end) %>

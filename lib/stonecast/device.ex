@@ -51,11 +51,48 @@ defmodule Stonecast.Device do
     GenServer.cast(pid, {:set_info, :name, name})
   end
 
+  @doc ~S"""
+  Retrieves temperatures (Kelvin) seen between two DateTime objects
+
+  ## Examples
+      iex> {:ok, dvc} = Stonecast.Device.start_link("abc")
+      iex> now = DateTime.utc_now()
+      iex> earlier_time = now |> DateTime.add(-3600, :second)
+      iex> temp_time = now |> DateTime.add(-30, :second)
+      iex> Stonecast.Device.temperatures_between(dvc, earlier_time, now)
+      []
+      iex> Stonecast.Device.record_temperature(dvc, 100, temp_time)
+      iex> Stonecast.Device.temperatures_between(dvc, earlier_time, now)
+      [{temp_time, 100}]
+  """
+  def temperatures_between(pid, time_a, time_b) do
+    GenServer.call(pid, {:temperatures_between, time_a, time_b})
+  end
+
+  @doc ~S"""
+  Record a specific temperature
+
+  ## Examples
+      iex> {:ok, dvc} = Stonecast.Device.start_link("abc")
+      iex> now = DateTime.utc_now()
+      iex> earlier_time = now |> DateTime.add(-3600, :second)
+      iex> temp_time = now |> DateTime.add(-30, :second)
+      iex> Stonecast.Device.temperatures_between(dvc, earlier_time, now)
+      []
+      iex> Stonecast.Device.record_temperature(dvc, 100, temp_time)
+      iex> Stonecast.Device.temperatures_between(dvc, earlier_time, now)
+      [{temp_time, 100}]
+  """
+  def record_temperature(pid, temp, time) do
+    GenServer.cast(pid, {:record_temperature, temp, time})
+  end
+
   @impl true
   def init(id) do
     {:ok, %{
       id: id,
-      name: nil
+      name: nil,
+      temperatures: []
     }}
   end
 
@@ -70,8 +107,20 @@ defmodule Stonecast.Device do
   end
 
   @impl true
+  def handle_call({:temperatures_between, time_a, time_b}, _from, %{temperatures: temps} = state) do
+    {:reply, temps |> Enum.filter(fn {time, _} ->
+      time_a <= time && time <= time_b
+    end), state}
+  end
+
+  @impl true
   def handle_cast({:set_info, :name, name}, state) do
     {:noreply, %{state | name: name}}
+  end
+
+  @impl true
+  def handle_cast({:record_temperature, temp, time}, %{temperatures: temps} = state) do
+    {:noreply, %{state | temperatures: [{time, temp} | temps]}}
   end
 
 end

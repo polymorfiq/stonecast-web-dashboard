@@ -1,0 +1,17 @@
+<h1>Stonecast Devices</h1>
+
+<%= @devices |> Enum.map(fn device -> %>
+    <a href="#"><%= device[:name] %></a>
+<% end) %>
+
+<br />
+<button phx-capture-click="display_device_modal">New Device</button>
+
+<%= if @modal_state == :add_device do %>
+    <.live_component module={Modal} id="apples" name={"Test12345"}>
+        <form>
+            <b>ID:</b><input type="text" name="id" />
+            <button>Add Device</button>
+        </form>
+    </.live_component>
+<% end %>

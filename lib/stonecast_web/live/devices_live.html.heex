@@ -5,13 +5,13 @@
 <% end) %>
 
 <br />
-<button phx-capture-click="display_device_modal">New Device</button>
+<button phx-click="display_device_modal">New Device</button>
 
 <%= if @modal_state == :add_device do %>
-    <.live_component module={Modal} id="apples" name={"Test12345"}>
-        <form>
+    <.live_component module={Modal} id="apples">
+        <.live_component module={Forms.Basic} id="basic-form">
             <b>ID:</b><input type="text" name="id" />
-            <button>Add Device</button>
-        </form>
+            <button type="submit">Add Device</button>
+        </.live_component>
     </.live_component>
 <% end %>
